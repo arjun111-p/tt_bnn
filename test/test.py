@@ -1,40 +1,50 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
-# SPDX-License-Identifier: Apache-2.0
-
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import Timer
 
+# -------------------------------------------------------
+# Python mirror of the BNN hardware logic
+# -------------------------------------------------------
 
-@cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+def bnn_neuron6(x, w):
+    """XNOR + popcount + threshold>=3"""
+    xnor = (~(x ^ w)) & 0x3F
+    return 1 if bin(xnor).count('1') >= 3 else 0
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, unit="us")
-    cocotb.start_soon(clock.start())
+def bnn_neuron4(x, w):
+    """XNOR + popcount + threshold>=2"""
+    xnor = (~(x ^ w)) & 0xF
+    return 1 if bin(xnor).count('1') >= 2 else 0
 
-    # Reset
-    dut._log.info("Reset")
-    dut.ena.value = 1
-    dut.ui_in.value = 0
-    dut.uio_in.value = 0
-    dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
-    dut.rst_n.value = 1
+def compute_expected(ui_in):
+    """Compute expected uo_out[7:0] for a given 6-bit input"""
+    x = ui_in & 0x3F
 
-    dut._log.info("Test project behavior")
+    # Layer 1 weights (matches project.v exactly)
+    W1 = [0b101011, 0b110001, 0b011010, 0b111100]
+    h = [bnn_neuron6(x, w) for w in W1]
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+    # hidden = {h3, h2, h1, h0}
+    hidden = (h[3] << 3) | (h[2] << 2) | (h[1] << 1) | h[0]
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    # Layer 2 weights
+    W2_0 = 0b1011
+    W2_1 = 0b0110
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
+    o0 = bnn_neuron4(hidden, W2_0)
+    o1 = bnn_neuron4(hidden, W2_1)
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+    # Confidence: LSB of popcount
+    pop_o0 = bin((~(hidden ^ W2_0)) & 0xF).count('1')
+    pop_o1 = bin((~(hidden ^ W2_1)) & 0xF).count('1')
+
+    # Build uo_out exactly as project.v does
+    uo = 0
+    uo |= (o0)              # bit 0: class 0
+    uo |= (o1 << 1)         # bit 1: class 1
+    uo |= ((pop_o0 & 1) << 2)  # bit 2: confidence class 0 LSB
+    uo |= ((pop_o1 & 1) << 3)  # bit 3: confidence class 1 LSB
+    uo |= (hidden << 4)     # bits 7:4: hidden layer debug
+
+    return uo & 0xFF
+
+# ---
