@@ -8,6 +8,7 @@ module tb ();
     #1;
   end
 
+  
   reg clk;
   reg rst_n;
   reg ena;
