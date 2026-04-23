@@ -3,7 +3,7 @@ yaml_version: 6
 project:
   title:       "Binary Neural Network Inference Engine"
   author:      "HIMANSHU PAL"
-  description: "Fully combinational BNN: XNOR + popcount classifies a 6-bit input into 2 classes using a hidden layer of 4 neurons."
+  description: "A fully combinational Binary Neural Network (BNN) that classifies a 6-bit input into 2 classes using XNOR and popcount operations across a hidden layer of 4 neurons."
   language:    "Verilog"
   clock_hz:    0
   tiles:       "1x1"
@@ -22,8 +22,8 @@ pinout:
   ui[7]: "Unused"
   uo[0]: "Class 0 output"
   uo[1]: "Class 1 output"
-  uo[2]: "Confidence bit (class 0 LSB)"
-  uo[3]: "Confidence bit (class 1 LSB)"
+  uo[2]: "Confidence bit LSB (class 0)"
+  uo[3]: "Confidence bit LSB (class 1)"
   uo[4]: "Hidden neuron 0 (debug)"
   uo[5]: "Hidden neuron 1 (debug)"
   uo[6]: "Hidden neuron 2 (debug)"
