@@ -2,7 +2,7 @@ yaml_version: 6
 
 project:
   title:       "Binary Neural Network Inference Engine"
-  author:      "HIMANSHU PAL"
+  author:      "KANYA RASI"
   description: "A fully combinational Binary Neural Network (BNN) that classifies a 6-bit input into 2 classes using XNOR and popcount operations across a hidden layer of 4 neurons."
   language:    "Verilog"
   clock_hz:    0
