@@ -6,7 +6,7 @@ You can also include images in this folder and reference them in the markdown. E
 
 ## How it works
 
-This project is a fully combinational Binary Neural Network (BNN) inference engine implemented in Verilog. It classifies a 6-bit input feature vector into one of two output classes using a two-layer architecture with fixed binary weights.
+This project is a fully combinational Binary Neural Network (BNN) inference engine implemented in Verilog. It classifies a 6-bit  input feature vector into one of two output classes using a two-layer architecture with fixed binary weights.
 
 **Layer 1 — Hidden Layer (4 neurons):** Each neuron receives the full 6-bit input and computes an XNOR operation with a fixed 6-bit weight vector. XNOR replaces multiplication — a matching bit contributes +1, a mismatching bit contributes -1. A popcount then tallies the number of matches, and a threshold of 3 or more activates the neuron output to 1.
 
